@@ -5,7 +5,7 @@ import subprocess
 
 class RoutingTable:
     class RoutingTableEntry:
-        def __init__(self, dest, netmask=0xFFFFFFFF, gateway, gatewayMAC, interface, localMAC, metric=1):
+        def __init__(self, dest, netmask, gateway, gatewayMAC, interface, localMAC, metric=1):
             self.dest = dest
             self.netmask = netmask
             self.gateway = gateway
