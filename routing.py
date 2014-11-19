@@ -23,13 +23,13 @@ class RoutingTable:
             self.metric = metric
         def __repr__(self):
             return "dest: " + str(self.dest) 
-                 + "\tnetmask: " + str(self.netmask) 
-                 + "\tgateway: " + str(self.gateway)
-                 + "\tgatewayMAC: " + str(self.gatewayMAC)
-                 + "\tinterface: " + str(self.interface)
-                 + "\localMAC: " + str(self.localMAC)
-                 + "\tmetric: " + str(self.metric)
-                 + "]"
+                + "\tnetmask: " + str(self.netmask) 
+                + "\tgateway: " + str(self.gateway)
+                + "\tgatewayMAC: " + str(self.gatewayMAC)
+                + "\tinterface: " + str(self.interface)
+                + "\localMAC: " + str(self.localMAC)
+                + "\tmetric: " + str(self.metric)
+                + "]"
 
     def __init__(self):
         self.table = []
