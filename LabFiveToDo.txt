@@ -1,0 +1,28 @@
+
+Setup
+1. Quagga on routers, configure routing tables so everything can reach everything
+		Note: Nodes 5 and 6 should be subnetted: what is the route? what routers did you use it on?
+2. Routing table on usRTR
+		- remove all non-local (except users), note which machines can't communicate (node0 w/ anything)
+
+Coding
+1. Build a routing table that contains destNet, next-hop IP, and MAC next-hop
+2. Capture packets sent to router
+3. If packetDest is local, ignore
+4. Else if packetDest matches routing table
+	- do stuff
+5. Else
+	- drop?
+
+Sidenotes: make sure to block kernel ICMP and implement our own ICMP
+
+Testing
+IPERF
+1. Packets per second: smallest possible, then increasing sending rate until dropping packets
+	- calculate max pps 
+2. Throughput: largest possible UDP
+    - calculate max throughput
+	- Why are file transfer ppl interested in throughput with 1024^2 vs network 10^6??
+
+Why is CIDR important?
+	- So you can map whole subnets at once, and non-local routers don't have to worry about individual hosts in a subnet
