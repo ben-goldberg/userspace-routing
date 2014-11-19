@@ -58,6 +58,7 @@ class RoutingTable:
         return bestEntry
 
 routing_table = RoutingTable()
+arp_table = []
 
 #Your per-packet router code goes here
 def pkt_callback(pkt):
@@ -70,10 +71,11 @@ def pkt_callback(pkt):
 
     dest_ip = pkt[IP].dest
 
-    # Determine if the destination IP is local to this computer. If yes, then return
-    # TODO: check all interfaces and drop if to local subnet, not just local host
+    # If the dest IP is local to this computer or LAN, kernel handles packet
     local_ip = socket.gethostbyname(socket.gethostname())
     if dest_ip == local_ip:
+        return
+    elif any(dest_ip in a for a in arp_table):
         return
 
     # Is the destination *network* in your routing table, if not, send ICMP "Destination host unreachable", then return
@@ -123,12 +125,12 @@ def setup():
     output = process.communicate()[0]
     output_list = output.split('\n')
     output_split_list = [a.split() for a in output_list]
-    arp_info = [[a[1].translate(None, '()'),a[3],a[5]] for a in output_split_list if len(a) > 5]
+    arp_table = [[a[1].translate(None, '()'),a[3],a[5]] for a in output_split_list if len(a) > 5]
 
-    lan1 += [a[1:] for a in arp_info if a[0] == lan1[2]][0]
-    lan2 += [a[1:] for a in arp_info if a[0] == lan2[2]][0]
+    lan1 += [a[1:] for a in arp_table if a[0] == lan1[2]][0]
+    lan2 += [a[1:] for a in arp_table if a[0] == lan2[2]][0]
 
-    unique_interface = list(set([a[2] for a in arp_info]))
+    unique_interface = list(set([a[2] for a in arp_table]))
     interface_destmac_dict = {}
     for interface in unique_interface:
         process = subprocess.Popen(["ifconfig", str(interface)], stdout=subprocess.PIPE)
