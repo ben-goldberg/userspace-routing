@@ -109,12 +109,14 @@ def pkt_callback(pkt):
 
 def setup():
     # Disable ICMP echos
-    subprocess.Popen('sudo sysctl -w net.ipv4.icmp_echo_ignore_all=1')
-    subprocess.Popen('sudo sysctl -w net.ipv4.icmp_echo_ignore_broadcasts=1')
+    subprocess.Popen('sudo sysctl -w net.ipv4.icmp_echo_ignore_all=1'.split())
+    subprocess.Popen('sudo sysctl -w net.ipv4.icmp_echo_ignore_broadcasts=1'.split())
+    # subprocess.Popen("sudo iptables -I OUTPUT -p icmp --icmp-type destination-unreachable -j DROP".split())
 
     # Ping everything w/ TTL 1 --> ARP created 
     # TODO make sure this works
-    arping()
+    ans,unans=srp(Ether(dst="ff:ff:ff:ff:ff:ff")/ARP(pdst="10.99.0.*/24"),timeout=2)
+    ans2,unans2=srp(Ether(dst="ff:ff:ff:ff:ff:ff")/ARP(pdst="10.10.0.*/24"),timeout=2)
 
     # Construct Routing Table
     # Hardcoded IP mappings
