@@ -38,6 +38,8 @@ class RoutingTable:
         for entry in self.table:
             out_str += str(entry) + "\n"
         return out_str
+    def __iter__(self):
+        return iter(self.table)
     def add_entry(self, entry):
         self.table.append(entry)
     def find_entry(self, ip):
@@ -69,17 +71,20 @@ def pkt_callback(pkt):
     if IP not in pkt:
         return
 
-    dest_ip = pkt[IP].dest
+    dest_ip = pkt[IP].dst
 
     # If the dest IP is local to this computer or LAN, kernel handles packet
-    local_ip = socket.gethostbyname(socket.gethostname())
-    if dest_ip == local_ip:
+    if dest_ip == "10.99.0.3" or dest_ip == "10.10.0.2":
         return
     elif any(dest_ip in a for a in arp_table):
         return
 
     # Is the destination *network* in your routing table, if not, send ICMP "Destination host unreachable", then return
-    if not any((dest_ip & entry.netmask) == (entry.dest & entry.netmask) for entry in routing_table):
+    has_route = False
+    for entry in routing_table:
+        if ((dest_ip & entry.netmask) == (entry.dest & entry.netmask)):
+            has_route = True
+    if not has_route:
         send(IP(dst=pkt[IP].src)/ICMP(type=3, code=1))
         return
 
@@ -170,4 +175,4 @@ if __name__ == "__main__":
     print "routing_table: ", routing_table
 
     #Start the packet sniffer
-    #sniff(prn=pkt_callback, store=0)
+    sniff(prn=pkt_callback, store=0)
