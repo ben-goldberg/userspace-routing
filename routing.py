@@ -27,7 +27,7 @@ class RoutingTable:
                 + "\tgateway: " + str(self.gateway) \
                 + "\tgatewayMAC: " + str(self.gatewayMAC) \
                 + "\tinterface: " + str(self.interface) \
-                + "\localMAC: " + str(self.localMAC) \
+                + "\tlocalMAC: " + str(self.localMAC) \
                 + "\tmetric: " + str(self.metric) \
                 + "]"
 
@@ -36,11 +36,11 @@ class RoutingTable:
     def __repr__(self):
         out_str = "Routing Table\n"
         for entry in self.table:
-            out_str += entry + "\n"
+            out_str += str(entry) + "\n"
         return out_str
-    def add_entry(entry):
+    def add_entry(self, entry):
         self.table.append(entry)
-    def find_entry(ip):
+    def find_entry(self, ip):
         """ Finds most specific routing table entry, breaking ties on metric """
         # Dummmy variable
         bestEntry = RoutingTableEntry(dest, 0xFFFFFFFF, 0x0, "eth0", sys.maxint)
@@ -112,8 +112,8 @@ def setup():
     subprocess.Popen('sudo sysctl -w net.ipv4.icmp_echo_ignore_broadcasts=1'.split())
 
     # Ping everything w/ TTL 1 --> ARP created 
-    subprocess.Popen('ping 10.99.0.1'.split())
-    subprocess.Popen('ping 10.99.0.2'.split())
+    subprocess.Popen('ping 10.99.0.1 -c 1'.split())
+    subprocess.Popen('ping 10.99.0.2 -c 1'.split())
 
     # arping("10.99.0.0/24")
     # arping("10.10.0.0/24")
@@ -141,10 +141,6 @@ def setup():
     arp_table = [[a[1].translate(None, '()'),a[3],a[6]] for a in output_split_list if len(a) > 6]
     sys.stdout.flush()
 
-    print output
-    print "this is arp table", arp_table
-    for i in arp_table:
-        print i
     subnet1 += [a[1:] for a in arp_table if a[0] == subnet1[2]][0]
     subnet2 += [a[1:] for a in arp_table if a[0] == subnet2[2]][0]
 
@@ -154,7 +150,7 @@ def setup():
         process = subprocess.Popen(["ifconfig", str(interface)], stdout=subprocess.PIPE)
         output = process.communicate()[0]
         output_list = output.replace('\n', ' ').split()
-        local_mac = output_list[output_list.index('ether') + 1]
+        local_mac = output_list[output_list.index('HWaddr')+1]
         interface_destmac_dict[interface] = local_mac
 
     subnet1.append(interface_destmac_dict[subnet1[-1]])
@@ -162,16 +158,16 @@ def setup():
 
     subnet1Entry = RoutingTable.RoutingTableEntry(subnet1)
     subnet2Entry = RoutingTable.RoutingTableEntry(subnet2)
-    routing_table.add(subnet1Entry)
-    routing_table.add(subnet2Entry)
+    routing_table.add_entry(subnet1Entry)
+    routing_table.add_entry(subnet2Entry)
     
 
 #Main code here...
 if __name__ == "__main__":
     #First setup your routing table either as global variables or as objects passed to pkt_callback
     #And any other init code
-    print "before setup"
     setup()
+    print "routing_table: ", routing_table
 
     #Start the packet sniffer
     #sniff(prn=pkt_callback, store=0)
