@@ -94,12 +94,11 @@ def pkt_callback(pkt):
     gateway = routing_entry.gateway
 
     # Determine the outgoing interface and MAC address needed to reach the next-hop router
-    out_iface=routing_entry.interface
+    out_iface = routing_entry.interface
 
     # Modify the SRC and DST MAC addresses to match the outgoing interface and the DST MAC found above
-    pkt.src = pkt.dst
-    # TODO: WHAT to DO
-    pkt.dst = arping(gateway)
+    pkt.src = routing_entry.localMAC
+    pkt.dst = routing_entry.gatewayMAC
 
     # Update the IP header checksum
     pkt.show2()
@@ -117,6 +116,8 @@ def setup():
     # TODO make sure this works
     ans,unans=srp(Ether(dst="ff:ff:ff:ff:ff:ff")/ARP(pdst="10.99.0.*/24"),timeout=2)
     ans2,unans2=srp(Ether(dst="ff:ff:ff:ff:ff:ff")/ARP(pdst="10.10.0.*/24"),timeout=2)
+    # arping("10.99.0.*/24")
+    # arping("10.10.0.*/24")
 
     # Construct Routing Table
     # Hardcoded IP mappings
