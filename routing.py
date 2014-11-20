@@ -3,6 +3,8 @@ import socket
 import sys
 import subprocess
 
+print("Before routing table")
+
 class RoutingTable:
     class RoutingTableEntry:
         def __init__(self, dest, netmask, gateway, gatewayMAC, interface, localMAC, metric=1):
@@ -56,6 +58,8 @@ class RoutingTable:
                      if metric < bestEntry.metric:
                         bestEntry = RoutingTableEntry(dest,netmask,gateway,interface,metric)
         return bestEntry
+
+print "after routing table"
 
 routing_table = RoutingTable()
 arp_table = []
@@ -129,7 +133,12 @@ def setup():
     output_list = output.split('\n')
     output_split_list = [a.split() for a in output_list]
     arp_table = [[a[1].translate(None, '()'),a[3],a[5]] for a in output_split_list if len(a) > 5]
+    sys.stdout.flush()
 
+    print output
+    print "this is arp table", arp_table
+    for i in arp_table:
+        print i
     lan1 += [a[1:] for a in arp_table if a[0] == lan1[2]][0]
     lan2 += [a[1:] for a in arp_table if a[0] == lan2[2]][0]
 

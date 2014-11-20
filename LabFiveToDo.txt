@@ -1,7 +1,10 @@
 
 Setup
-1. Quagga on routers, configure routing tables so everything can reach everything
-		Note: Nodes 5 and 6 should be subnetted: what is the route? what routers did you use it on?
+// 1. Quagga on routers, configure routing tables so everything can reach everything
+// 		Note: Nodes 5 and 6 should be subnetted: what is the route? what routers did you use it on?
+
+
+1. Static routing, delete appropriate routes from routing table on usRTR 
 2. Routing table on usRTR
 		- remove all non-local (except users), note which machines can't communicate (node0 w/ anything)
 
@@ -14,7 +17,6 @@ Coding
 5. Else
 	- drop?
 
-Sidenotes: make sure to block kernel ICMP and implement our own ICMP
 
 Testing
 IPERF
