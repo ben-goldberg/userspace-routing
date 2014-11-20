@@ -3,8 +3,6 @@ import socket
 import sys
 import subprocess
 
-print("Before routing table")
-
 class RoutingTable:
     class RoutingTableEntry:
         def __init__(self, dest, netmask, gateway, gatewayMAC, interface, localMAC, metric=1):
@@ -58,8 +56,6 @@ class RoutingTable:
                      if metric < bestEntry.metric:
                         bestEntry = RoutingTableEntry(dest,netmask,gateway,interface,metric)
         return bestEntry
-
-print "after routing table"
 
 routing_table = RoutingTable()
 arp_table = []
@@ -115,13 +111,12 @@ def setup():
     subprocess.Popen('sudo sysctl -w net.ipv4.icmp_echo_ignore_all=1'.split())
     subprocess.Popen('sudo sysctl -w net.ipv4.icmp_echo_ignore_broadcasts=1'.split())
     # subprocess.Popen("sudo iptables -I OUTPUT -p icmp --icmp-type destination-unreachable -j DROP".split())
-
+    print "after first subprocess"
     # Ping everything w/ TTL 1 --> ARP created 
-    # TODO make sure this works
-    ans,unans=srp(Ether(dst="ff:ff:ff:ff:ff:ff")/ARP(pdst="10.99.0.*/24"),timeout=2)
-    ans2,unans2=srp(Ether(dst="ff:ff:ff:ff:ff:ff")/ARP(pdst="10.10.0.*/24"),timeout=2)
-    # arping("10.99.0.*/24")
-    # arping("10.10.0.*/24")
+    arping("10.99.0.0/24")
+    arping("10.10.0.0/24")
+    scapy_table = conf.route.split('\n')
+    
 
     # Construct Routing Table
     # Hardcoded IP mappings
@@ -132,7 +127,7 @@ def setup():
     output = process.communicate()[0]
     output_list = output.split('\n')
     output_split_list = [a.split() for a in output_list]
-    arp_table = [[a[1].translate(None, '()'),a[3],a[5]] for a in output_split_list if len(a) > 5]
+    arp_table = [[a[1].translate(None, '()'),a[3],a[6]] for a in output_split_list if len(a) > 6]
     sys.stdout.flush()
 
     print output
@@ -164,6 +159,7 @@ def setup():
 if __name__ == "__main__":
     #First setup your routing table either as global variables or as objects passed to pkt_callback
     #And any other init code
+    print "before setup"
     setup()
 
     #Start the packet sniffer
