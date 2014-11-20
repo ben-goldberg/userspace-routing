@@ -110,18 +110,29 @@ def setup():
     # Disable ICMP echos
     subprocess.Popen('sudo sysctl -w net.ipv4.icmp_echo_ignore_all=1'.split())
     subprocess.Popen('sudo sysctl -w net.ipv4.icmp_echo_ignore_broadcasts=1'.split())
-    # subprocess.Popen("sudo iptables -I OUTPUT -p icmp --icmp-type destination-unreachable -j DROP".split())
-    print "after first subprocess"
+
     # Ping everything w/ TTL 1 --> ARP created 
-    arping("10.99.0.0/24")
-    arping("10.10.0.0/24")
-    scapy_table = conf.route.split('\n')
+    subprocess.Popen('ping 10.99.0.1'.split())
+    subprocess.Popen('ping 10.99.0.2'.split())
+
+    # arping("10.99.0.0/24")
+    # arping("10.10.0.0/24")
+    # scapy_table_strings = str(conf.route).split('\n')
+    # scapy_table = scapy_table_strings
+    # for i in range(len(scapy_table_strings)):
+    #     scapy_table[i] = scapy_table_strings[i].split()
+
+    # subnet_eth = ""
+    # for line in scapy_table:
+    #     if line[0] == "10.99.0.0":
+    #         subnet_eth = line[3]
+
     
 
     # Construct Routing Table
     # Hardcoded IP mappings
-    lan1 = ["10.1.0.0", 0xFFFFFF00, "10.99.0.1"]
-    lan2 = ["10.1.2.0", 0xFFFFFF00, "10.99.0.2"]
+    subnet1 = ["10.1.0.0", 0xFFFFFF00, "10.99.0.1"]
+    subnet2 = ["10.1.2.0", 0xFFFFFF00, "10.99.0.2"]
     # Look at ARP table for corresponding info
     process = subprocess.Popen("arp -a".split(), stdout=subprocess.PIPE)
     output = process.communicate()[0]
@@ -134,8 +145,8 @@ def setup():
     print "this is arp table", arp_table
     for i in arp_table:
         print i
-    lan1 += [a[1:] for a in arp_table if a[0] == lan1[2]][0]
-    lan2 += [a[1:] for a in arp_table if a[0] == lan2[2]][0]
+    subnet1 += [a[1:] for a in arp_table if a[0] == subnet1[2]][0]
+    subnet2 += [a[1:] for a in arp_table if a[0] == subnet2[2]][0]
 
     unique_interface = list(set([a[2] for a in arp_table]))
     interface_destmac_dict = {}
@@ -146,13 +157,13 @@ def setup():
         local_mac = output_list[output_list.index('ether') + 1]
         interface_destmac_dict[interface] = local_mac
 
-    lan1.append(interface_destmac_dict[lan1[-1]])
-    lan2.append(interface_destmac_dict[lan2[-1]])
+    subnet1.append(interface_destmac_dict[subnet1[-1]])
+    subnet2.append(interface_destmac_dict[subnet2[-1]])
 
-    lan1Entry = RoutingTable.RoutingTableEntry(lan1)
-    lan2Entry = RoutingTable.RoutingTableEntry(lan2)
-    routing_table.add(lan1Entry)
-    routing_table.add(lan2Entry)
+    subnet1Entry = RoutingTable.RoutingTableEntry(subnet1)
+    subnet2Entry = RoutingTable.RoutingTableEntry(subnet2)
+    routing_table.add(subnet1Entry)
+    routing_table.add(subnet2Entry)
     
 
 #Main code here...
