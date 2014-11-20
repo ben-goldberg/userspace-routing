@@ -3,6 +3,19 @@ import socket
 import sys
 import subprocess
 
+def ipstr_to_hex(ip_str):
+    """
+    input: an ip address as a scapy_table_string
+    output: the same ip as an int
+    """
+    str_byte_list = ip_str.split('.')
+    byte_list = [int(a) for a in str_byte_list]
+    ip_hex = 0
+    for i in range(len(byte_list)):
+        ip_hex += byte_list[i] << (8 * (len(byte_list) - i - 1))
+    return ip_hex
+
+
 class RoutingTable:
     class RoutingTableEntry:
         def __init__(self, dest, netmask, gateway, gatewayMAC, interface, localMAC, metric=1):
@@ -49,7 +62,7 @@ class RoutingTable:
 
         for dest,netmask,gateway,interface,metric in self.table:
             # Check the subnet
-            if dest&netmask == ip&netmask:
+            if ipstr_to_hex(dest)&netmask == ipstr_to_hex(ip)&netmask:
                 # Always take more specific match
                 if netmask < bestEntry.netmask:
                     bestEntry = RoutingTableEntry(dest,netmask,gateway,interface,metric)
@@ -82,8 +95,9 @@ def pkt_callback(pkt):
     # Is the destination *network* in your routing table, if not, send ICMP "Destination host unreachable", then return
     has_route = False
     for entry in routing_table:
-        if ((dest_ip & entry.netmask) == (entry.dest & entry.netmask)):
+        if ((ipstr_to_hex(dest_ip) & entry.netmask) == (ipstr_to_hex(entry.dest) & entry.netmask)):
             has_route = True
+
     if not has_route:
         send(IP(dst=pkt[IP].src)/ICMP(type=3, code=1))
         return
