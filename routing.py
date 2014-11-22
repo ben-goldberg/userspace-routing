@@ -81,18 +81,18 @@ class RoutingTable:
     def find_entry(self, ip):
         """ Finds most specific routing table entry, breaking ties on metric """
         # Dummmy variable
-        bestEntry = RoutingTableEntry(dest, 0xFFFFFFFF, 0x0, "eth0", sys.maxint)
+        bestEntry = RoutingTable.RoutingTableEntry("*.*.*.*", 0xFFFFFFFF, 0x0, "eth0", sys.maxint)
 
         for dest,netmask,gateway,interface,metric in self.table:
             # Check the subnet
             if ipstr_to_hex(dest)&netmask == ipstr_to_hex(ip)&netmask:
                 # Always take more specific match
                 if netmask < bestEntry.netmask:
-                    bestEntry = RoutingTableEntry(dest,netmask,gateway,interface,metric)
+                    bestEntry = RoutingTable.RoutingTableEntry(dest,netmask,gateway,interface,metric)
                 # If equally specific, take entry with lower metric
                 elif netmask == bestEntry.netmask:
                      if metric < bestEntry.metric:
-                        bestEntry = RoutingTableEntry(dest,netmask,gateway,interface,metric)
+                        bestEntry = RoutingTable.RoutingTableEntry(dest,netmask,gateway,interface,metric)
         return bestEntry
 
 routing_table = RoutingTable()
