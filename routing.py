@@ -36,7 +36,7 @@ def send_icmp(pkt, icmp_type, icmp_code):
     data = str(pkt[IP])[0:ip_hdr_len*4 + 8]
 
     out_pkt = icmp_pkt/data
-    send(out_pkt)
+    send(out_pkt, verbose=0)
 
 
 class RoutingTable:
@@ -101,8 +101,8 @@ arp_table = []
 
 #Your per-packet router code goes here
 def pkt_callback(pkt):
-    print "Received an Ethernet packet. MAC src:", pkt.src, "MAC dst:",pkt.dst
-    print pkt.summary()
+    #print "Received an Ethernet packet. MAC src:", pkt.src, "MAC dst:",pkt.dst
+    #print pkt.summary()
 
     #Determine if it is an IP packet. If not then return
     if IP not in pkt:
