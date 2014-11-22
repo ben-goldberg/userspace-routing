@@ -185,8 +185,14 @@ def setup():
     arp_table = [[a[1].translate(None, '()'),a[3],a[6]] for a in output_split_list if len(a) > 6]
     sys.stdout.flush()
 
-    subnet1 += [a[1:] for a in arp_table if a[0] == subnet1[2]][0]
-    subnet2 += [a[1:] for a in arp_table if a[0] == subnet2[2]][0]
+    for entry in arp_table:
+        if entry[0] == subnet1[2]:
+            subnet1 += entry[1:]
+        elif entry[0] == subnet2[2]:
+            subnet2 += entry[1:]
+
+    # subnet1 += [a[1:] for a in arp_table if a[0] == subnet1[2]][0]
+    # subnet2 += [a[1:] for a in arp_table if a[0] == subnet2[2]][0]
 
     unique_interface = list(set([a[2] for a in arp_table]))
     interface_destmac_dict = {}
