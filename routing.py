@@ -120,7 +120,8 @@ def pkt_callback(pkt):
     pkt.dst = routing_entry.gatewayMAC
 
     # Update the IP header checksum
-    pkt.show2()
+    del pkt[IP].chksum
+    pkt = pkt.__class__(str(pkt))
 
     #Send the packet out the proper interface as required to reach the next hop router. Use:
     sendp(pkt, iface=out_iface)
