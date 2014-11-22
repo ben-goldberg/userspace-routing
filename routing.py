@@ -15,6 +15,29 @@ def ipstr_to_hex(ip_str):
         ip_hex += byte_list[i] << (8 * (len(byte_list) - i - 1))
     return ip_hex
 
+def send_icmp(pkt, icmp_type, icmp_code):
+    """
+    input: bad packet, with type and code of desired ICMP message
+    output: none
+    """
+    # Craft ICMP response
+    icmp_pkt = Ether()/IP()/ICMP()
+
+    # Switch src and dest
+    icmp_pkt[IP].src = pkt[IP].dst
+    icmp_pkt[IP].dst = pkt[IP].src
+    
+    # Set type and code
+    icmp_pkt[ICMP].type = icmp_type
+    icmp_pkt[ICMP].code = icmp_code
+
+    # Get IP header and 8 bytes, allows ICMP dest to demux
+    ip_hdr_len = pkt[IP].ihl
+    data = str(pkt[IP])[0:ip_hdr_len*4 + 8]
+
+    out_pkt = icmp_pkt/data
+    send(out_pkt)
+
 
 class RoutingTable:
     class RoutingTableEntry:
@@ -99,13 +122,13 @@ def pkt_callback(pkt):
             has_route = True
 
     if not has_route:
-        send(IP(dst=pkt[IP].src)/ICMP(type=3, code=1))
+        send_icmp(pkt, icmp_type=3, icmp_code=11)
         return
 
     # Decrement the TTL. If TTL=0, send ICMP for TTL expired and return.
     pkt[IP].ttl -= 1
     if pkt[IP].ttl < 1:
-        send(IP(dst=pkt[IP].src)/ICMP(type=11, code=0))
+        send_icmp(pkt, icmp_type=11, icmp_code=0)
         return
 
     # Find the next hop (gateway) for the destination *network*
