@@ -158,6 +158,7 @@ def setup():
     # Ping everything w/ TTL 1 --> ARP created 
     subprocess.Popen('ping 10.99.0.1 -c 1'.split())
     subprocess.Popen('ping 10.99.0.2 -c 1'.split())
+    subprocess.Popen('ping 10.10.0.1 -c 1'.split())
 
     # arping("10.99.0.0/24")
     # arping("10.10.0.0/24")
