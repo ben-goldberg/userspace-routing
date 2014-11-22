@@ -41,14 +41,14 @@ def send_icmp(pkt, icmp_type, icmp_code):
 
 class RoutingTable:
     class RoutingTableEntry:
-        def __init__(self, dest, netmask, gateway, gatewayMAC, interface, localMAC, metric=1):
-            self.dest = dest
-            self.netmask = netmask
-            self.gateway = gateway
-            self.gatewayMAC = gatewayMAC
-            self.interface = interface
-            self.localMAC = localMAC
-            self.metric = metric
+        # def __init__(self, dest, netmask, gateway, gatewayMAC, interface, localMAC, metric=1):
+        #     self.dest = dest
+        #     self.netmask = netmask
+        #     self.gateway = gateway
+        #     self.gatewayMAC = gatewayMAC
+        #     self.interface = interface
+        #     self.localMAC = localMAC
+        #     self.metric = metric
         def __init__(self, param_list, metric=1):
             self.dest = param_list[0]
             self.netmask = param_list[1]
@@ -81,18 +81,19 @@ class RoutingTable:
     def find_entry(self, ip):
         """ Finds most specific routing table entry, breaking ties on metric """
         # Dummmy variable
-        bestEntry = RoutingTable.RoutingTableEntry("*.*.*.*", 0xFFFFFFFF, 0x0, "eth0", sys.maxint)
+        dummy_param_list = ["0.0.0.0", 0xFFFFFFFF, "0.0.0.0", "00:00:00:00:00:00", "eth0", "00:00:00:00:00:00"]
+        bestEntry = RoutingTable.RoutingTableEntry(dummy_param_list,sys.maxint)
 
-        for dest,netmask,gateway,interface,metric in self.table:
+        for entry in self.table:
             # Check the subnet
-            if ipstr_to_hex(dest)&netmask == ipstr_to_hex(ip)&netmask:
+            if ipstr_to_hex(entry.dest)&entry.netmask == ipstr_to_hex(ip)&entry.netmask:
                 # Always take more specific match
-                if netmask < bestEntry.netmask:
-                    bestEntry = RoutingTable.RoutingTableEntry(dest,netmask,gateway,interface,metric)
+                if entry.netmask < bestEntry.netmask:
+                    bestEntry = entry
                 # If equally specific, take entry with lower metric
-                elif netmask == bestEntry.netmask:
-                     if metric < bestEntry.metric:
-                        bestEntry = RoutingTable.RoutingTableEntry(dest,netmask,gateway,interface,metric)
+                elif entry.netmask == bestEntry.netmask:
+                     if entry.metric < bestEntry.metric:
+                        bestEntry = entry
         return bestEntry
 
 routing_table = RoutingTable()
