@@ -111,10 +111,10 @@ def pkt_callback(pkt):
     dest_ip = pkt[IP].dst
 
     # If the dest IP is local to this computer or LAN, kernel handles packet
-    if dest_ip == "10.99.0.3" or dest_ip == "10.10.0.2":
+    if "10.99.0" in dest_ip or "10.10.0" in dest_ip or "192.168" in dest_ip:
         return
-    elif any(dest_ip in a for a in arp_table):
-        return
+    # elif any(dest_ip in a for a in arp_table):
+    #     return
 
     # Is the destination *network* in your routing table, if not, send ICMP "Destination host unreachable", then return
     has_route = False
