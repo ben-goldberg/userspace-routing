@@ -41,29 +41,21 @@ def send_icmp(pkt, icmp_type, icmp_code):
 
 class RoutingTable:
     class RoutingTableEntry:
-        # def __init__(self, dest, netmask, gateway, gatewayMAC, interface, localMAC, metric=1):
-        #     self.dest = dest
-        #     self.netmask = netmask
-        #     self.gateway = gateway
-        #     self.gatewayMAC = gatewayMAC
-        #     self.interface = interface
-        #     self.localMAC = localMAC
-        #     self.metric = metric
         def __init__(self, param_list, metric=1):
             self.dest = param_list[0]
             self.netmask = param_list[1]
             self.gateway = param_list[2]
-            self.gatewayMAC = param_list[3]
+            self.gateway_mac = param_list[3]
             self.interface = param_list[4]
-            self.localMAC = param_list[5]
+            self.local_mac = param_list[5]
             self.metric = metric
         def __repr__(self):
             return "dest: " + str(self.dest) \
                 + "\tnetmask: " + str(self.netmask) \
                 + "\tgateway: " + str(self.gateway) \
-                + "\tgatewayMAC: " + str(self.gatewayMAC) \
+                + "\tgateway_mac: " + str(self.gateway_mac) \
                 + "\tinterface: " + str(self.interface) \
-                + "\tlocalMAC: " + str(self.localMAC) \
+                + "\tlocal_mac: " + str(self.local_mac) \
                 + "\tmetric: " + str(self.metric) \
                 + "]"
 
@@ -140,8 +132,11 @@ def pkt_callback(pkt):
     out_iface = routing_entry.interface
 
     # Modify the SRC and DST MAC addresses to match the outgoing interface and the DST MAC found above
-    pkt.src = routing_entry.localMAC
-    pkt.dst = routing_entry.gatewayMAC
+    # Drop packet if src is equal to local_mac, as this means pkt is duplicate
+    if pkt.src = routing_entry.local_mac:
+        return
+    pkt.src = routing_entry.local_mac
+    pkt.dst = routing_entry.gateway_mac
 
     # Update the IP header checksum
     del pkt[IP].chksum
@@ -159,20 +154,6 @@ def setup():
     subprocess.Popen('ping 10.99.0.1 -c 1'.split())
     subprocess.Popen('ping 10.99.0.2 -c 1'.split())
     subprocess.Popen('ping 10.10.0.1 -c 1'.split())
-
-    # arping("10.99.0.0/24")
-    # arping("10.10.0.0/24")
-    # scapy_table_strings = str(conf.route).split('\n')
-    # scapy_table = scapy_table_strings
-    # for i in range(len(scapy_table_strings)):
-    #     scapy_table[i] = scapy_table_strings[i].split()
-
-    # subnet_eth = ""
-    # for line in scapy_table:
-    #     if line[0] == "10.99.0.0":
-    #         subnet_eth = line[3]
-
-    
 
     # Construct Routing Table
     # Hardcoded IP mappings
