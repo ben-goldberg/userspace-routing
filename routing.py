@@ -147,7 +147,7 @@ def pkt_callback(pkt):
     pkt = pkt.__class__(str(pkt))
 
     #Send the packet out the proper interface as required to reach the next hop router. Use:
-    sendp(pkt, iface=out_iface, verbose=0)
+    send(pkt, iface=out_iface, verbose=0)
 
 def setup():
     # Disable ICMP echos
