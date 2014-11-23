@@ -151,8 +151,9 @@ def pkt_callback(pkt):
 
 def setup():
     # Disable ICMP echos
-    subprocess.Popen('sudo sysctl -w net.ipv4.icmp_echo_ignore_all=1'.split())
-    subprocess.Popen('sudo sysctl -w net.ipv4.icmp_echo_ignore_broadcasts=1'.split())
+    #subprocess.Popen('sudo sysctl -w net.ipv4.icmp_echo_ignore_all=1'.split())
+    #subprocess.Popen('sudo sysctl -w net.ipv4.icmp_echo_ignore_broadcasts=1'.split())
+    subprocess.Popen('sudo iptables -I OUTPUT -p icmp --icmp-type destination-unreachable -j DROP'.split())
 
     # Ping everything w/ TTL 1 --> ARP created 
     subprocess.Popen('ping 10.99.0.1 -c 1'.split())
