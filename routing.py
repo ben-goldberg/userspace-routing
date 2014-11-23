@@ -112,9 +112,11 @@ def pkt_callback(pkt):
     has_route = False
     for entry in routing_table:
         if ((ipstr_to_hex(dest_ip) & entry.netmask) == (ipstr_to_hex(entry.dest) & entry.netmask)):
+            print dest_ip + " is reachable"
             has_route = True
 
     if not has_route:
+        print dest_ip + " is unreachable"
         send_icmp(pkt, icmp_type=3, icmp_code=11)
         return
 
@@ -126,6 +128,8 @@ def pkt_callback(pkt):
 
     # Find the next hop (gateway) for the destination *network*
     routing_entry = routing_table.find_entry(dest_ip)
+    print dest_ip + "has route in: "
+    print routing_entry
     gateway = routing_entry.gateway
 
     # Determine the outgoing interface and MAC address needed to reach the next-hop router
@@ -133,7 +137,7 @@ def pkt_callback(pkt):
 
     # Modify the SRC and DST MAC addresses to match the outgoing interface and the DST MAC found above
     # Drop packet if src is equal to local_mac, as this means pkt is duplicate
-    if pkt.src = routing_entry.local_mac:
+    if pkt.src == routing_entry.local_mac:
         return
     pkt.src = routing_entry.local_mac
     pkt.dst = routing_entry.gateway_mac
