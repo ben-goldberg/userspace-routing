@@ -103,6 +103,7 @@ def pkt_callback(pkt):
     dest_ip = pkt[IP].dst
 
     # If the dest IP is local to this computer or LAN, kernel handles packet
+    # Change to starts with
     if "10.99.0" in dest_ip or "10.10.0" in dest_ip or "192.168" in dest_ip:
         return
     # elif any(dest_ip in a for a in arp_table):
@@ -111,6 +112,7 @@ def pkt_callback(pkt):
     # Is the destination *network* in your routing table, if not, send ICMP "Destination host unreachable", then return
     has_route = False
     for entry in routing_table:
+        # Make sure these comparisons are valid
         if ((ipstr_to_hex(dest_ip) & entry.netmask) == (ipstr_to_hex(entry.dest) & entry.netmask)):
             print dest_ip + " is reachable"
             has_route = True
@@ -128,8 +130,8 @@ def pkt_callback(pkt):
 
     # Find the next hop (gateway) for the destination *network*
     routing_entry = routing_table.find_entry(dest_ip)
-    print dest_ip + "has route in: "
-    print routing_entry
+    # print dest_ip + "has route in: "
+    # print routing_entry
     gateway = routing_entry.gateway
 
     # Determine the outgoing interface and MAC address needed to reach the next-hop router
@@ -201,7 +203,8 @@ def setup():
         output = process.communicate()[0]
         output_list = output.replace('\n', ' ').split()
 
-        # This is hardcoded based on the output of ifconfig on the nodes
+        # This is hardcoded based on the output of ifconfig on the nodes,
+        # as the local mac address is the word after HWaddr
         local_mac = output_list[output_list.index('HWaddr')+1]
         interface_destmac_dict[interface] = local_mac
 
