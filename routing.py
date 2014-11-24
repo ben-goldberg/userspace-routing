@@ -3,6 +3,10 @@ import socket
 import sys
 import subprocess
 
+# Global Variables
+routing_table = RoutingTable()
+arp_table = []
+
 def ipstr_to_hex(ip_str):
     """
     input: an ip address as a scapy_table_string
@@ -38,7 +42,14 @@ def send_icmp(pkt, icmp_type, icmp_code):
     out_pkt = icmp_pkt/data
     print "======= ICMP Packet ========"
     out_pkt.show()
-    send(out_pkt, verbose=0)
+
+    # Get iface to send out_pkt
+    iface = ""
+    for entry in arp_table:
+        if out_pkt[IP].dst in entry:
+            iface = entry[2]
+
+    sendp(out_pkt, iface=iface, verbose=0)
 
 
 class RoutingTable:
@@ -90,9 +101,6 @@ class RoutingTable:
                         bestEntry = entry
         return bestEntry
 
-routing_table = RoutingTable()
-arp_table = []
-
 #Your per-packet router code goes here
 def pkt_callback(pkt):
     #print "Received an Ethernet packet. MAC src:", pkt.src, "MAC dst:",pkt.dst
@@ -137,7 +145,6 @@ def pkt_callback(pkt):
 
     # Modify the SRC and DST MAC addresses to match the outgoing interface and the DST MAC found above
     # Drop packet if src is equal to local_mac, as this means pkt is duplicate
-    # TODO: Make sure these are actually the mac addresses
     if pkt.src == routing_entry.local_mac:
         return
     pkt.src = routing_entry.local_mac
@@ -179,9 +186,6 @@ def setup():
     #   by parentheses
     arp_table = [[a[1].translate(None, '()'),a[3],a[6]] for a in output_split_list if len(a) > 6]
     print "arp table:\n\n" + str(arp_table)
-
-    # TODO: Do we still need this?
-    sys.stdout.flush()
 
     # Add the dest MAC info into the subnet info
     for entry in arp_table:
