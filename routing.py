@@ -176,6 +176,8 @@ def pkt_callback(pkt):
     sendp(pkt, iface=out_iface, verbose=0)
 
 def setup():
+    global arp_table
+    global routing_table
     # Disable ICMP echos
     subprocess.Popen('sudo sysctl -w net.ipv4.icmp_echo_ignore_all=1'.split())
     subprocess.Popen('sudo sysctl -w net.ipv4.icmp_echo_ignore_broadcasts=1'.split())
