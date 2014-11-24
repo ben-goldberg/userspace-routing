@@ -108,8 +108,6 @@ def pkt_callback(pkt):
     # Change to starts with
     if "10.99.0" in dest_ip or "10.10.0" in dest_ip or "192.168" in dest_ip:
         return
-    # elif any(dest_ip in a for a in arp_table):
-    #     return
 
     # Is the destination *network* in your routing table, if not, send ICMP "Destination host unreachable", then return
     has_route = False
@@ -132,8 +130,6 @@ def pkt_callback(pkt):
 
     # Find the next hop (gateway) for the destination *network*
     routing_entry = routing_table.find_entry(dest_ip)
-    # print dest_ip + "has route in: "
-    # print routing_entry
     gateway = routing_entry.gateway
 
     # Determine the outgoing interface and MAC address needed to reach the next-hop router
@@ -152,7 +148,6 @@ def pkt_callback(pkt):
     pkt = pkt.__class__(str(pkt))
 
     #Send the packet out the proper interface as required to reach the next hop router. Use:
-    pkt.show()
     sendp(pkt, iface=out_iface, verbose=0)
 
 def setup():
@@ -194,11 +189,6 @@ def setup():
             subnet1 += entry[1:]
         elif entry[0] == subnet2[2]:
             subnet2 += entry[1:]
-            
-    print "subnet 1: " + str(subnet1)
-    print "subnet 2: " + str(subnet2)
-    # subnet1 += [a[1:] for a in arp_table if a[0] == subnet1[2]][0]
-    # subnet2 += [a[1:] for a in arp_table if a[0] == subnet2[2]][0]
 
     # For each unique interface found above, we want to find the local mac
     #  that corresponds to it using ifconfig
