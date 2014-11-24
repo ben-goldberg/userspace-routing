@@ -89,10 +89,35 @@ def send_icmp(pkt, icmp_type, icmp_code):
     data = str(pkt[IP])[0:ip_hdr_len*4 + 8]
 
     out_pkt = icmp_pkt/data
+
+    # Get src and dest MAC, and out iface
+    iface = ""
+    entry_found = 0
+    for entry in routing_table:
+        if out_pkt[IP].dst == entry.dest:
+            out_pkt.dst = entry.gateway_mac
+            out_pkt.src = entry.local_mac
+            iface = entry.interface
+            entry_found = 1
+
+    if not entry_found:
+        for arp_entry in arp_table:
+            if out_pkt[IP].dst in arp_entry:
+                out_pkt.dst = arp_entry[1]
+                iface = arp_entry[2]
+
+        process = subprocess.Popen(["ifconfig", str(iface)], stdout=subprocess.PIPE)
+        output = process.communicate()[0]
+        output_list = output.replace('\n', ' ').split()
+
+        # This is hardcoded based on the output of ifconfig on the nodes,
+        # as the local mac address is the word after HWaddr
+        out_pkt.src = output_list[output_list.index('HWaddr')+1]
+
     print "======= ICMP Packet ========"
     out_pkt.show()
 
-    send(out_pkt, verbose=0)
+    sendp(out_pkt, iface=iface, verbose=0)
 
 #Your per-packet router code goes here
 def pkt_callback(pkt):
