@@ -3,55 +3,6 @@ import socket
 import sys
 import subprocess
 
-# Global Variables
-routing_table = RoutingTable()
-arp_table = []
-
-def ipstr_to_hex(ip_str):
-    """
-    input: an ip address as a scapy_table_string
-    output: the same ip as an int
-    """
-    str_byte_list = ip_str.split('.')
-    byte_list = [int(a) for a in str_byte_list]
-    ip_hex = 0
-    for i in range(len(byte_list)):
-        ip_hex += byte_list[i] << (8 * (len(byte_list) - i - 1))
-    return ip_hex
-
-def send_icmp(pkt, icmp_type, icmp_code):
-    """
-    input: bad packet, with type and code of desired ICMP message
-    output: none
-    """
-    # Craft ICMP response
-    icmp_pkt = Ether()/IP()/ICMP()
-
-    # Switch src and dest
-    icmp_pkt[IP].src = pkt[IP].dst
-    icmp_pkt[IP].dst = pkt[IP].src
-    
-    # Set type and code
-    icmp_pkt[ICMP].type = icmp_type
-    icmp_pkt[ICMP].code = icmp_code
-
-    # Get IP header and 8 bytes, allows ICMP dest to demux
-    ip_hdr_len = pkt[IP].ihl
-    data = str(pkt[IP])[0:ip_hdr_len*4 + 8]
-
-    out_pkt = icmp_pkt/data
-    print "======= ICMP Packet ========"
-    out_pkt.show()
-
-    # Get iface to send out_pkt
-    iface = ""
-    for entry in arp_table:
-        if out_pkt[IP].dst in entry:
-            iface = entry[2]
-
-    sendp(out_pkt, iface=iface, verbose=0)
-
-
 class RoutingTable:
     class RoutingTableEntry:
         def __init__(self, param_list, metric=1):
@@ -100,6 +51,54 @@ class RoutingTable:
                      if entry.metric < bestEntry.metric:
                         bestEntry = entry
         return bestEntry
+
+# Global Variables
+routing_table = RoutingTable()
+arp_table = []
+
+def ipstr_to_hex(ip_str):
+    """
+    input: an ip address as a scapy_table_string
+    output: the same ip as an int
+    """
+    str_byte_list = ip_str.split('.')
+    byte_list = [int(a) for a in str_byte_list]
+    ip_hex = 0
+    for i in range(len(byte_list)):
+        ip_hex += byte_list[i] << (8 * (len(byte_list) - i - 1))
+    return ip_hex
+
+def send_icmp(pkt, icmp_type, icmp_code):
+    """
+    input: bad packet, with type and code of desired ICMP message
+    output: none
+    """
+    # Craft ICMP response
+    icmp_pkt = Ether()/IP()/ICMP()
+
+    # Switch src and dest
+    icmp_pkt[IP].src = pkt[IP].dst
+    icmp_pkt[IP].dst = pkt[IP].src
+    
+    # Set type and code
+    icmp_pkt[ICMP].type = icmp_type
+    icmp_pkt[ICMP].code = icmp_code
+
+    # Get IP header and 8 bytes, allows ICMP dest to demux
+    ip_hdr_len = pkt[IP].ihl
+    data = str(pkt[IP])[0:ip_hdr_len*4 + 8]
+
+    out_pkt = icmp_pkt/data
+    print "======= ICMP Packet ========"
+    out_pkt.show()
+
+    # Get iface to send out_pkt
+    iface = ""
+    for entry in arp_table:
+        if out_pkt[IP].dst in entry:
+            iface = entry[2]
+
+    sendp(out_pkt, iface=iface, verbose=0)
 
 #Your per-packet router code goes here
 def pkt_callback(pkt):
