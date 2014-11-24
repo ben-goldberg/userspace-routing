@@ -24,9 +24,8 @@ def send_icmp(pkt, icmp_type, icmp_code):
     icmp_pkt = Ether()/IP()/ICMP()
 
     # Switch src and dest
-    temp = pkt[IP].dst
+    icmp_pkt[IP].src = pkt[IP].dst
     icmp_pkt[IP].dst = pkt[IP].src
-    icmp_pkt[IP].src = temp
     
     # Set type and code
     icmp_pkt[ICMP].type = icmp_type
