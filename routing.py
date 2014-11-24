@@ -100,21 +100,28 @@ def send_icmp(pkt, icmp_type, icmp_code):
             iface = entry.interface
             entry_found = 1
 
+    print "======= ICMP Packet ========"
+
     if not entry_found:
+        print "Entry not found"
         for arp_entry in arp_table:
+            print arp_entry
             if out_pkt[IP].dst in arp_entry:
+                print "Found arp entry!"
                 out_pkt.dst = arp_entry[1]
                 iface = arp_entry[2]
-
+        print " - End ARP Table -"
+        
+        print "iface: " + str(iface)
         process = subprocess.Popen(["ifconfig", str(iface)], stdout=subprocess.PIPE)
         output = process.communicate()[0]
+        print "output: " + str(output)
         output_list = output.replace('\n', ' ').split()
 
         # This is hardcoded based on the output of ifconfig on the nodes,
         # as the local mac address is the word after HWaddr
         out_pkt.src = output_list[output_list.index('HWaddr')+1]
 
-    print "======= ICMP Packet ========"
     out_pkt.show()
 
     sendp(out_pkt, iface=iface, verbose=0)
