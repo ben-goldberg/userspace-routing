@@ -185,9 +185,9 @@ def setup():
     for entry in arp_table:
         if entry[0] == subnet1[2]:
             subnet1 += entry[1:]
-        elif entry[0] == subnet2[2]:
+        if entry[0] == subnet2[2]:
             subnet2 += entry[1:]
-        elif entry[0] == subnet3[2]:
+        if entry[0] == subnet3[2]:
             subnet3 += entry[1:]
 
     # For each unique interface found above, we want to find the local mac
