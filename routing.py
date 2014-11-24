@@ -165,7 +165,7 @@ def setup():
     # Hardcoded IP mappings
     subnet1 = ["10.1.0.0", 0xFFFFFF00, "10.99.0.1"]
     subnet2 = ["10.1.2.0", 0xFFFFFF00, "10.99.0.2"]
-    subnet2 = ["10.1.3.0", 0xFFFFFF00, "10.99.0.2"]
+    subnet3 = ["10.1.3.0", 0xFFFFFF00, "10.99.0.2"]
 
     # Look at ARP table for corresponding info
     process = subprocess.Popen("arp -a".split(), stdout=subprocess.PIPE)
