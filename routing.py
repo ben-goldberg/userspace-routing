@@ -188,7 +188,7 @@ def setup():
         elif entry[0] == subnet2[2]:
             subnet2 += entry[1:]
         elif entry[0] == subnet3[2]:
-            subnet3 == entry[1:]
+            subnet3 += entry[1:]
 
     # For each unique interface found above, we want to find the local mac
     #  that corresponds to it using ifconfig
