@@ -151,11 +151,11 @@ def pkt_callback(pkt):
 
 def setup():
     # Disable ICMP echos
-    #subprocess.Popen('sudo sysctl -w net.ipv4.icmp_echo_ignore_all=1'.split())
-    #subprocess.Popen('sudo sysctl -w net.ipv4.icmp_echo_ignore_broadcasts=1'.split())
-    subprocess.Popen('sudo iptables -I OUTPUT -p icmp --icmp-type destination-unreachable -j DROP'.split())
+    subprocess.Popen('sudo sysctl -w net.ipv4.icmp_echo_ignore_all=1'.split())
+    subprocess.Popen('sudo sysctl -w net.ipv4.icmp_echo_ignore_broadcasts=1'.split())
+    #subprocess.Popen('sudo iptables -I OUTPUT -p icmp --icmp-type destination-unreachable -j DROP'.split())
 
-    # Ping everything w/ TTL 1 --> ARP created 
+    # Ping the routers and node0 w/ TTL 1 --> ARP created 
     subprocess.Popen('ping 10.99.0.1 -c 1'.split())
     subprocess.Popen('ping 10.99.0.2 -c 1'.split())
     subprocess.Popen('ping 10.10.0.1 -c 1'.split())
@@ -164,14 +164,25 @@ def setup():
     # Hardcoded IP mappings
     subnet1 = ["10.1.0.0", 0xFFFFFF00, "10.99.0.1"]
     subnet2 = ["10.1.2.0", 0xFFFFFF00, "10.99.0.2"]
+
     # Look at ARP table for corresponding info
     process = subprocess.Popen("arp -a".split(), stdout=subprocess.PIPE)
     output = process.communicate()[0]
+
+    # Split twice so we can get individual words per line
     output_list = output.split('\n')
     output_split_list = [a.split() for a in output_list]
+
+    # Parse the output of arp -a into a table (a list of lists of 3 string fields)
+    # The gateway IP should be the second word on the line, but is surrounded
+    #   by parentheses
     arp_table = [[a[1].translate(None, '()'),a[3],a[6]] for a in output_split_list if len(a) > 6]
+    print "arp table:\n\n" + str(arp_table)
+
+    # TODO: Do we still need this?
     sys.stdout.flush()
 
+    # Add the dest MAC info into the subnet info
     for entry in arp_table:
         if entry[0] == subnet1[2]:
             subnet1 += entry[1:]
@@ -181,15 +192,21 @@ def setup():
     # subnet1 += [a[1:] for a in arp_table if a[0] == subnet1[2]][0]
     # subnet2 += [a[1:] for a in arp_table if a[0] == subnet2[2]][0]
 
+    # For each unique interface found above, we want to find the local mac
+    #  that corresponds to it using ifconfig
     unique_interface = list(set([a[2] for a in arp_table]))
     interface_destmac_dict = {}
     for interface in unique_interface:
         process = subprocess.Popen(["ifconfig", str(interface)], stdout=subprocess.PIPE)
         output = process.communicate()[0]
         output_list = output.replace('\n', ' ').split()
+
+        # This is hardcoded based on the output of ifconfig on the nodes
         local_mac = output_list[output_list.index('HWaddr')+1]
         interface_destmac_dict[interface] = local_mac
 
+    # Combine the parameters we have gathered for each subnet and add them
+    #  to the routing table
     subnet1.append(interface_destmac_dict[subnet1[-1]])
     subnet2.append(interface_destmac_dict[subnet2[-1]])
 
