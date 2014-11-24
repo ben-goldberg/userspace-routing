@@ -93,12 +93,15 @@ def send_icmp(pkt, icmp_type, icmp_code):
     out_pkt.show()
 
     # Get iface to send out_pkt
-    iface = ""
-    for entry in arp_table:
-        if out_pkt[IP].dst in entry:
-            iface = entry[2]
+    if out_pkt[IP].dst == "10.10.0.1":
+        iface = ""
+        for entry in arp_table:
+            if out_pkt[IP].dst in entry:
+                iface = entry[2]
 
-    sendp(out_pkt, iface=iface, verbose=0)
+        sendp(out_pkt, iface=iface, verbose=0)
+    else:
+        send(out_pkt, verbose=0)
 
 #Your per-packet router code goes here
 def pkt_callback(pkt):
