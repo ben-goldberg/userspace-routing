@@ -36,6 +36,8 @@ def send_icmp(pkt, icmp_type, icmp_code):
     data = str(pkt[IP])[0:ip_hdr_len*4 + 8]
 
     out_pkt = icmp_pkt/data
+    print "======= ICMP Packet ========"
+    out_pkt.show()
     send(out_pkt, verbose=0)
 
 
@@ -150,7 +152,8 @@ def pkt_callback(pkt):
     pkt = pkt.__class__(str(pkt))
 
     #Send the packet out the proper interface as required to reach the next hop router. Use:
-    send(pkt, iface=out_iface, verbose=0)
+    pkt.show()
+    sendp(pkt, iface=out_iface, verbose=0)
 
 def setup():
     # Disable ICMP echos
@@ -191,7 +194,9 @@ def setup():
             subnet1 += entry[1:]
         elif entry[0] == subnet2[2]:
             subnet2 += entry[1:]
-
+            
+    print "subnet 1: " + str(subnet1)
+    print "subnet 2: " + str(subnet2)
     # subnet1 += [a[1:] for a in arp_table if a[0] == subnet1[2]][0]
     # subnet2 += [a[1:] for a in arp_table if a[0] == subnet2[2]][0]
 
