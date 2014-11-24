@@ -165,6 +165,7 @@ def setup():
     # Hardcoded IP mappings
     subnet1 = ["10.1.0.0", 0xFFFFFF00, "10.99.0.1"]
     subnet2 = ["10.1.2.0", 0xFFFFFF00, "10.99.0.2"]
+    subnet2 = ["10.1.3.0", 0xFFFFFF00, "10.99.0.2"]
 
     # Look at ARP table for corresponding info
     process = subprocess.Popen("arp -a".split(), stdout=subprocess.PIPE)
@@ -186,6 +187,8 @@ def setup():
             subnet1 += entry[1:]
         elif entry[0] == subnet2[2]:
             subnet2 += entry[1:]
+        elif entry[0] == subnet3[2]:
+            subnet3 == entry[1:]
 
     # For each unique interface found above, we want to find the local mac
     #  that corresponds to it using ifconfig
@@ -205,11 +208,14 @@ def setup():
     #  to the routing table
     subnet1.append(interface_destmac_dict[subnet1[-1]])
     subnet2.append(interface_destmac_dict[subnet2[-1]])
+    subnet3.append(interface_destmac_dict[subnet3[-1]])
 
     subnet1Entry = RoutingTable.RoutingTableEntry(subnet1)
     subnet2Entry = RoutingTable.RoutingTableEntry(subnet2)
+    subnet3Entry = RoutingTable.RoutingTableEntry(subnet3)
     routing_table.add_entry(subnet1Entry)
     routing_table.add_entry(subnet2Entry)
+    routing_table.add_entry(subnet3Entry)
     
 
 #Main code here...
