@@ -139,6 +139,7 @@ def pkt_callback(pkt):
 
     # Modify the SRC and DST MAC addresses to match the outgoing interface and the DST MAC found above
     # Drop packet if src is equal to local_mac, as this means pkt is duplicate
+    # TODO: Make sure these are actually the mac addresses
     if pkt.src == routing_entry.local_mac:
         return
     pkt.src = routing_entry.local_mac
